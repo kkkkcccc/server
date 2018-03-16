@@ -1,0 +1,185 @@
+// TODO IMPLEMENT THE BUSINESS API ROUTES FOR THE FOLLOWING ROUTES BELOW 
+// SWAGGER MOCK FILE BELOW...
+
+// GET /businesses/businessId  ===>  Get a business 
+// GET /businesses  ===>  Get all businesses
+// GET /businesses/<businessid>/reviews  ===>  Get all reviews for a business
+// GET /businesses?location=<location>  ===>  Get all businesses with the specified location
+// GET /businesses?category=<category>  ===>  Get all businesses with the specified category
+// POST /auth/signup   ===>   Register a user
+// POST /auth/login  ===>  Login a user
+// POST /businesses/   ===>  Register a business
+// POST /businesses/<businessid>/reviews  ===>  Add a review for a business
+// PUT /businesses/<businessId>  ===>  Update business profile
+// DELETE /businesses/<businessId>  ===>  Remove a business
+
+swagger: '2.0'
+info:
+  title: WEConnect API
+  description: The API for all the WEConnect operations.
+  version: unversioned
+host: '127.0.0.1:4000'
+schemes:
+  - https
+basePath: /
+produces:
+  - application/json
+consumes:
+  - application/json
+paths:
+  /routing-numbers:
+    get:
+      summary: 
+      parameters:
+        - name: office
+          in: query
+          description: Office key to get the numbers for
+          required: true
+          type: string
+      responses:
+        '200':
+          description: An array of numbers
+          schema:
+            $ref: '#/definitions/RoutingNumbersList'
+        '401':
+          description: Auth failed
+        '404':
+          description: No numbers found
+        '412':
+          description: Got wrong office key
+        '500':
+          description: General server error
+  /routing-info:
+    get:
+      summary: Routing info for a number
+      parameters:
+        - name: dnis
+          in: query
+          description: The number to get the info for
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The complete routing info
+          schema:
+            $ref: '#/definitions/RoutingInfo'
+        '401':
+          description: Auth error
+        '404':
+          description: No info for the given number
+        '412':
+          description: Got wrong input params
+        '500':
+          description: Server error
+    post:
+      summary: Update routing info for a number
+      description: >
+        Creates a new entry into the routing table if the DNIS is not there.
+        Otherwise, updates the existing entry. Writes to both replicas of the
+        DB.
+      parameters:
+        - name: routing-info
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/RoutingInfo'
+      responses:
+        '200':
+          description: Everything okay. The info was successfully updated/added
+        '500':
+          description: Server error
+    delete:
+      summary: Delete entry in the routing info table
+      description: >
+        Deletes routing info in both tables. If the info if absent, does
+        nothing.
+      parameters:
+        - name: dnis
+          in: query
+          description: The DNIS for which to remove routing info
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully removed the info.
+        '404':
+          description: The info was not found for the given DNIS.
+        '412':
+          description: Got no DNIS in request.
+        '500':
+          description: General server error.
+  /routing-search-dnis:
+    get:
+      summary: Case insensitive search by DNIS
+      description: >
+        You provide the DNIS and get all the DNISes that match it. Comparison is
+        case-insensitive.
+      parameters:
+        - name: dnis
+          in: query
+          description: The DNIS for which to search
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully got the info
+        '404':
+          description: The info was not found for the given DNIS
+        '412':
+          description: Got no DNIS in request.
+        '500':
+          description: General server error.
+  /routing-search-action:
+    get:
+      summary: Case insensitive search by action
+      description: >
+        You provide the action and get all the DNISes that match it. Search is
+        case-insensitive.
+      parameters:
+        - name: action
+          in: query
+          description: The action for which to search
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Successfully got the info
+        '404':
+          description: The info was not found for the given action
+        '412':
+          description: Got no action in request.
+        '500':
+          description: General server error.
+definitions:
+  RoutingNumbersList:
+    type: object
+    properties:
+      DNISes:
+        type: array
+        items:
+          type: string
+  RoutingInfo:
+    type: object
+    properties:
+      DNIS:
+        type: string
+        description: SourceDNIS in the routing table
+      OfficeKey:
+        type: string
+      Action:
+        type: string
+      NextActionWH:
+        type: string
+      ActionType:
+        type: string
+      NextActionOWH:
+        type: string
+      CallType:
+        type: string
+      Dequeue:
+        type: boolean
+      WaitTime:
+        type: integer
+        format: int32
+      SkipIfNoReady:
+        type: boolean
