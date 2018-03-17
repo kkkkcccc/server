@@ -1,16 +1,29 @@
 const express = require('express');
 const app = express();
+const morgan = require('morgan');
+const bodyParser = require('body-parser');
 
-const productRoutes = require('./api/routes/products');
-const orderRoutes = require('./api/routes/orders');
+const businessesRoutes = require('./api/routes/businesses');
+const authRoutes = require('./api/routes/auth');
 
-app.use('/products', productRoutes);
-app.use('/order', orderRoutes);
+app.use(morgan('dev'));
+app.use( bodyParser.urlencoded( {extended:false} ) );
+app.use( bodyParser.json() );
+
+app.use('/businesses', businessesRoutes);
+app.use('/auth', authRoutes);
+
+// index page here
+app.get('/', function(req, res){
+    res.status(200).json({
+        message : 'index page /',
+    });
+});
 
 app.use((req, res, next) => {
-    const error = new Error('Customize later but for now...Not Found!! lol');
+    const error = new Error('Page...Not Found!!');
     error.status = 404;
-    next(error);
+    next(error)
 });
 
 app.use((error, req, res, next) => {

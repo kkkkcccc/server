@@ -1,169 +1,265 @@
-// TODO IMPLEMENT THE BUSINESS API ROUTES FOR THE FOLLOWING ROUTES BELOW 
-// SWAGGER MOCK FILE BELOW...
-
-// GET /businesses/businessId  ===>  Get a business 
-// GET /businesses  ===>  Get all businesses
-// GET /businesses/<businessid>/reviews  ===>  Get all reviews for a business
-// GET /businesses?location=<location>  ===>  Get all businesses with the specified location
-// GET /businesses?category=<category>  ===>  Get all businesses with the specified category
-// POST /auth/signup   ===>   Register a user
-// POST /auth/login  ===>  Login a user
-// POST /businesses/   ===>  Register a business
-// POST /businesses/<businessid>/reviews  ===>  Add a review for a business
-// PUT /businesses/<businessId>  ===>  Update business profile
-// DELETE /businesses/<businessId>  ===>  Remove a business
-
 swagger: '2.0'
 info:
   title: WEConnect API
   description: The API for all the WEConnect operations.
-  version: unversioned
+  termsOfService: ""
+  contact:
+    email: "amaechi@gmail.com"
+  license:
+    name: "Apache 2.0"
+  version: version 1.0
 host: '127.0.0.1:4000'
 schemes:
-  - https
+  - http
 basePath: /
 produces:
   - application/json
 consumes:
   - application/json
 paths:
-  /routing-numbers:
+  /businesses:
     get:
-      summary: 
-      parameters:
-        - name: office
-          in: query
-          description: Office key to get the numbers for
-          required: true
-          type: string
+      summary: Get all businesses
       responses:
         '200':
-          description: An array of numbers
+          description: An array of businesses
           schema:
-            $ref: '#/definitions/RoutingNumbersList'
+            $ref: '#/definitions/BusinessObjects'
         '401':
           description: Auth failed
         '404':
-          description: No numbers found
-        '412':
-          description: Got wrong office key
+          description: No businesses found
         '500':
           description: General server error
-  /routing-info:
-    get:
-      summary: Routing info for a number
-      parameters:
-        - name: dnis
-          in: query
-          description: The number to get the info for
-          required: true
-          type: string
-      responses:
-        '200':
-          description: The complete routing info
-          schema:
-            $ref: '#/definitions/RoutingInfo'
-        '401':
-          description: Auth error
-        '404':
-          description: No info for the given number
-        '412':
-          description: Got wrong input params
-        '500':
-          description: Server error
     post:
-      summary: Update routing info for a number
-      description: >
-        Creates a new entry into the routing table if the DNIS is not there.
-        Otherwise, updates the existing entry. Writes to both replicas of the
-        DB.
+      summary: "Register a business"
+      description: ""
+      operationId: "add a business"
+      consumes:
+      - "application/json"
+      produces:
+      - "application/xml"
       parameters:
-        - name: routing-info
-          in: body
-          required: true
+      - in: "body"
+        name: "body"
+        description: "Business object that needs to be added to the Businesses"
+        required: true
+        schema:
+          $ref: "#/definitions/BusinessObjects"
+      responses:
+        405:
+          description: "Invalid input"
+  /businesses-category:
+    get:
+      summary: "Find A business by category"
+      description: "Returns an array of Business by category"
+      operationId: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "location"
+        in: "query"
+        description: "category of businesses to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
           schema:
-            $ref: '#/definitions/RoutingInfo'
-      responses:
-        '200':
-          description: Everything okay. The info was successfully updated/added
+            $ref: "#/definitions/BusinessObjects"
+        400:
+          description: "Invalid location supplied"
+        404:
+          description: "businesses not found"
         '500':
-          description: Server error
+          description: General server error
+  /businesses-location:
+    get:
+      summary: "Find A business by location"
+      description: "Returns an array of Business"
+      operationId: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "location"
+        in: "query"
+        description: "ID of businesses to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/BusinessObjects"
+        400:
+          description: "Invalid location supplied"
+        404:
+          description: "businesses not found"
+        '500':
+          description: General server error
+  /businesses/{businessid}:
+    get:
+      summary: "Get a business"
+      description: "Returns an array of Business"
+      operationId: ""
+      produces:
+      - "application/json"
+      parameters:
+      - name: "businessid"
+        in: "path"
+        description: "ID of businesses to return"
+        required: true
+        type: "integer"
+        format: "int64"
+      responses:
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/definitions/BusinessObjects"
+        400:
+          description: "Invalid location supplied"
+        404:
+          description: "businesses not found"
+        '500':
+          description: General server error
+    put:
+      summary: "Update business profile"
+      description: "This can only be done by the logged in user."
+      operationId: "updateUser"
+      produces:
+      - "application/xml"
+      - "application/json"
+      parameters:
+      - name: "businessid"
+        in: "path"
+        description: "name that need to be updated"
+        required: true
+        type: "string"
+      - in: "body"
+        name: "body"
+        description: "Updated user object"
+        required: true
+        schema:
+          $ref: "#/definitions/User"
+      responses:
+        400:
+          description: "Invalid user supplied"
+        404:
+          description: "User not found"
     delete:
-      summary: Delete entry in the routing info table
-      description: >
-        Deletes routing info in both tables. If the info if absent, does
-        nothing.
+      summary: "Remove a business"
+      description: "This can only be done by the logged in user."
+      operationId: "deleteUser"
+      produces:
+      - "application/json"
       parameters:
-        - name: dnis
-          in: query
-          description: The DNIS for which to remove routing info
-          required: true
-          type: string
+      - name: "businessid"
+        in: "path"
+        description: "The name that needs to be deleted"
+        required: true
+        type: "string"
       responses:
-        '200':
-          description: Successfully removed the info.
-        '404':
-          description: The info was not found for the given DNIS.
-        '412':
-          description: Got no DNIS in request.
-        '500':
-          description: General server error.
-  /routing-search-dnis:
+        400:
+          description: "Invalid username supplied"
+        404:
+          description: "User not found"
+  /businesses/{businessid}/reviews:
     get:
-      summary: Case insensitive search by DNIS
-      description: >
-        You provide the DNIS and get all the DNISes that match it. Comparison is
-        case-insensitive.
+      summary: "Get all reviews for a business"
+      description: "Returns all reviews for a business"
+      produces:
+      - "application/json"
       parameters:
-        - name: dnis
-          in: query
-          description: The DNIS for which to search
-          required: true
-          type: string
+      - name: "businessid"
+        in: "path"
+        description: "ID of business to return"
+        required: true
+        type: "integer"
+        format: "int64"
       responses:
-        '200':
-          description: Successfully got the info
-        '404':
-          description: The info was not found for the given DNIS
-        '412':
-          description: Got no DNIS in request.
-        '500':
-          description: General server error.
-  /routing-search-action:
-    get:
-      summary: Case insensitive search by action
-      description: >
-        You provide the action and get all the DNISes that match it. Search is
-        case-insensitive.
+        200:
+          description: "successful operation"
+          schema:
+            $ref: "#/BusinessObjects"
+        400:
+          description: "Invalid ID supplied"
+        404:
+          description: "Business not found"
+    post:
+      summary: "Add a review for a business"
+      description: ""
+      operationId: "updateBusinessWithForm"
+      consumes:
+      - "application/x-www-form-urlencoded"
+      produces:
+      - "application/json"
       parameters:
-        - name: action
-          in: query
-          description: The action for which to search
-          required: true
-          type: string
+      - name: "businessid"
+        in: "path"
+        description: "businessID of Business that needs to be updated"
+        required: true
+        type: "integer"
+        format: "int64"
+      - name: "status"
+        in: "formData"
+        description: "Updated status of the Business"
+        required: false
+        type: "string"
       responses:
-        '200':
-          description: Successfully got the info
-        '404':
-          description: The info was not found for the given action
-        '412':
-          description: Got no action in request.
-        '500':
-          description: General server error.
-definitions:
-  RoutingNumbersList:
+        405:
+          description: "Invalid input"
+  /auth/signup:
+    post:
+      summary: "Register a user"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "List of user object"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+  /auth/login:
+    post:
+      summary: "Login a user"
+      description: ""
+      produces:
+      - "application/json"
+      parameters:
+      - in: "body"
+        name: "body"
+        description: "List of login object"
+        required: true
+        schema:
+          type: "array"
+          items:
+            $ref: "#/definitions/User"
+      responses:
+        default:
+          description: "successful operation"
+definitions: #schema definitions below
+  BusinessObjects:
     type: object
     properties:
-      DNISes:
+      Businesses:
         type: array
         items:
           type: string
-  RoutingInfo:
+  BusinessObject:
     type: object
     properties:
       DNIS:
         type: string
-        description: SourceDNIS in the routing table
+        description: some description
       OfficeKey:
         type: string
       Action:
@@ -183,3 +279,4 @@ definitions:
         format: int32
       SkipIfNoReady:
         type: boolean
+        
