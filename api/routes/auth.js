@@ -32,7 +32,7 @@ router.post('/signup', (req, res, next) => {
         password: '',
     }
     if(isValidObject(req.body, user)){
-        bcrypt.hash(req.body.email, 10, (err, hash) => {
+        bcrypt.hash(req.body.password, 10, (err, hash) => {
             if(err){
                 return res.status(500).json({
                     error : err,
@@ -64,8 +64,7 @@ router.post('/signup', (req, res, next) => {
                 console.log(user)
                 users.push(user);
                 res.status(201).json({
-                    message : 'Auth Successful',
-                    token, token,
+                    message : 'Auth Successful'
                 });
             }
         })
@@ -89,18 +88,8 @@ router.post('/login', (req, res, next) => {
                         message : 'Auth Failed1'
                     });
                 }
-                console.log(result)
+                console.log(result, req.body.password, users[index]['password'], " rev")
                 if(result){
-                    const token = jwt.sign(
-                        {
-                            email: users[index]['email'],
-                            userid: users[index]['userid']
-                        },
-                        process.env.JWT_KEY,
-                        {
-                            expiresIn: "1h"
-                        }
-                    );
                     return res.status(200).json({
                         message : 'Auth Successful'
                     });
@@ -111,6 +100,9 @@ router.post('/login', (req, res, next) => {
             })
         }
     }
+    return res.status(401).json({
+        message : 'Auth Failed2'
+    });
 });
 
 module.exports = router;
